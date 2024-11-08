@@ -1,6 +1,8 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
+using TMPro;
 
 [RequireComponent(typeof(CharacterController))]
 public class PlayerController : MonoBehaviour {
@@ -13,8 +15,24 @@ public class PlayerController : MonoBehaviour {
     [SerializeField] private float rotationSpeed = 700f;
     [SerializeField] private float gravity = 9.81f;
     [SerializeField] private float fireRate = 1f;  // Time in seconds between shots
+    [SerializeField] private GameObject pauseMenu;
 
     private Vector3 velocity;
+    private bool isPaused = false; // Checks if game is paused
+
+    // Leveling System
+    [Header("Leveling System")]
+    [SerializeField] private int currentLevel = 1;  // Initial player level
+    [SerializeField] private int currentXP = 0;     // Current XP
+    [SerializeField] private int xpToNextLevel = 10; // XP needed to level up initially
+    [SerializeField] private TextMeshProUGUI levelText;  // UI Text to display current level
+    [SerializeField] private TextMeshProUGUI xpText;     // UI Text to display XP progress
+
+    // Health System
+    [Header("Health System")]
+    [SerializeField] private int maxHealth = 10;     // Maximum health
+    private int currentHealth;
+    [SerializeField] private TextMeshProUGUI healthText; // UI Text to display health
 
     private void Awake() {
         controller = GetComponent<CharacterController>();
@@ -23,9 +41,22 @@ public class PlayerController : MonoBehaviour {
     private void Start() {
         // Start the auto-firing coroutine
         StartCoroutine(AutoFire());
+
+        // Initialize health, XP, and level display
+        currentHealth = maxHealth;
+        UpdateXPDisplay();
+        UpdateHealthDisplay();
     }
 
     void Update() {
+        // Check for escape key press to toggle pause
+        if (Input.GetKeyDown(KeyCode.Escape)) {
+            TogglePause();
+        }
+
+        // If the game is paused, exit the update method
+        if (isPaused) return;
+
         // Get input for movement
         float x = Input.GetAxis("Horizontal"); 
         float z = Input.GetAxis("Vertical");   
@@ -57,16 +88,71 @@ public class PlayerController : MonoBehaviour {
         controller.Move(velocity * Time.deltaTime);
     }
 
+    public void TogglePause() {
+        isPaused = !isPaused;  // Toggle pause state
+        pauseMenu.SetActive(isPaused);  // Show or hide the pause menu
+        Time.timeScale = isPaused ? 0 : 1;  // Pause or resume the game time
+    }
+
     private IEnumerator AutoFire() {
         while (true) {
-            ShootProjectile();
-            yield return new WaitForSeconds(fireRate);  // Waits for 1 second (or specified fireRate) before the next shot
+            if (!isPaused)  // Only shoot if the game is not paused
+                ShootProjectile();
+            yield return new WaitForSeconds(fireRate); 
         }
     }
 
     private void ShootProjectile() {
         // Instantiate a new projectile at the spawn point and facing direction
         Instantiate(projectilePrefab, projectileSpawnPoint.position, transform.rotation);
+    }
+
+    // Method to add XP, which can be called by the XP item on pickup
+    public void AddXP(int amount) {
+        currentXP += amount;
+        Debug.Log("XP added! Current XP: " + currentXP);
+
+        // Check for level up
+        if (currentXP >= xpToNextLevel) {
+            LevelUp();
+        }
+
+        // Update the XP and level display on the UI
+        UpdateXPDisplay();
+    }
+
+    // Method to handle leveling up
+    private void LevelUp() {
+        currentLevel++;             // Increase player level
+        currentXP -= xpToNextLevel; // Reset current XP for next level
+        xpToNextLevel += 50;        // Increase the XP needed for the next level (optional scaling)
+
+        Debug.Log("Leveled up! New Level: " + currentLevel);
+        UpdateXPDisplay(); // Update UI to reflect the new level and XP progress
+    }
+
+    // Method to update the UI display for level and XP
+    private void UpdateXPDisplay() {
+        levelText.text = "Level: " + currentLevel;
+        xpText.text = "XP: " + currentXP + " / " + xpToNextLevel;
+    }
+
+    // Method to take damage when hit by an enemy
+    public void TakeDamage(int damage) {
+        currentHealth -= damage;
+        Debug.Log("Hero took damage! Current Health: " + currentHealth);
+
+        if (currentHealth <= 0) {
+            Debug.Log("Hero is dead!");
+            // Add game over logic here, like reloading the scene or showing a game over screen
+        }
+
+        UpdateHealthDisplay();
+    }
+
+    // Method to update the UI display for health
+    private void UpdateHealthDisplay() {
+        healthText.text = "Health: " + currentHealth;
     }
 }
 
