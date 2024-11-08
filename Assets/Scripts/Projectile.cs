@@ -7,6 +7,7 @@ public class Projectile : MonoBehaviour {
     [SerializeField] private float maxLifetime = 2f;
     private Rigidbody rb;
     private Camera mainCamera;
+    private int damage = 1; // Default damage value
 
     private void Awake() {
         rb = GetComponent<Rigidbody>();
@@ -29,11 +30,19 @@ public class Projectile : MonoBehaviour {
         }
     }
 
+    // New method to set damage
+    public void SetDamage(int newDamage) {
+        damage = newDamage;
+    }
+
     private void OnTriggerEnter(Collider other) {
         if (other.CompareTag("Enemy")) {
-            Destroy(other.gameObject);  // Destroy enemy on collision
-            Destroy(gameObject);  // Destroy projectile on collision
+            // Get the EnemyBehavior component and apply damage
+            EnemyBehavior enemyBehavior = other.GetComponent<EnemyBehavior>();
+            if (enemyBehavior != null) {
+                enemyBehavior.TakeDamage(damage); // Apply damage to the enemy
+            }
+            Destroy(gameObject);  // Destroy the projectile on collision
         }
     }
 }
-

@@ -517,7 +517,7 @@ GameObject:
   - component: {fileID: 95706204029656638}
   - component: {fileID: -343369819048283441}
   - component: {fileID: -6103728145929712658}
-  - component: {fileID: 1199794761245863364}
+  - component: {fileID: -4953519768130453969}
   m_Layer: 0
   m_Name: TurtleShellPBR
   m_TagString: Enemy
@@ -592,7 +592,7 @@ BoxCollider:
   serializedVersion: 2
   m_Size: {x: 1, y: 1, z: 1}
   m_Center: {x: 0, y: 0, z: 0}
---- !u!114 &1199794761245863364
+--- !u!114 &-4953519768130453969
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -601,11 +601,16 @@ MonoBehaviour:
   m_GameObject: {fileID: 1524411113276028}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9c9b6960da07d43fcb38d3265a8f97bd, type: 3}
+  m_Script: {fileID: 11500000, guid: 8abcc84187eac47baaa21a55ed1434be, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   speed: 2
+  health: 1
+  xpValue: 1
   xpPrefab: {fileID: 951251824637375397, guid: a93b284372b71409285c52b9560e5e10, type: 3}
+  projectilePrefab: {fileID: 7581615568043429592, guid: a3f9c4be0649a48509e2bd522718abed, type: 3}
+  projectileSpeed: 3
+  attackInterval: 2
 --- !u!1 &1532652994627396
 GameObject:
   m_ObjectHideFlags: 0

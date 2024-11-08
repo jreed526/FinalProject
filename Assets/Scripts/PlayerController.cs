@@ -1,51 +1,56 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
 using TMPro;
 
 [RequireComponent(typeof(CharacterController))]
 public class PlayerController : MonoBehaviour {
     [Header("General")]
     private CharacterController controller;
-    [SerializeField] private float speed = 5f;
+    [SerializeField] private float baseSpeed = 5f;
     [SerializeField] private Transform cam;
-    [SerializeField] private GameObject projectilePrefab;  // Reference to projectile prefab
-    [SerializeField] private Transform projectileSpawnPoint;  // Spawn point of the projectile
+    [SerializeField] private GameObject projectilePrefab;
+    [SerializeField] private Transform projectileSpawnPoint;
     [SerializeField] private float rotationSpeed = 700f;
     [SerializeField] private float gravity = 9.81f;
-    [SerializeField] private float fireRate = 1f;  // Time in seconds between shots
+    [SerializeField] private float fireRate = 1f;
     [SerializeField] private GameObject pauseMenu;
 
+    private float currentSpeed; // Speed affected by traits
     private Vector3 velocity;
-    private bool isPaused = false; // Checks if game is paused
+    private bool isPaused = false;
+
+    // Hero Traits
+    [Header("Hero Traits")]
+    [SerializeField] private int attackDamage = 1; // Damage per projectile
+    [SerializeField] private int maxHealth = 10;   // Maximum health
+    private int currentHealth;
+    [SerializeField] private int maxShield = 3;    // Maximum shield
+    private int currentShield = 0;
+    [SerializeField] private TextMeshProUGUI healthText;
+    [SerializeField] private TextMeshProUGUI shieldText; // UI for shield
 
     // Leveling System
     [Header("Leveling System")]
-    [SerializeField] private int currentLevel = 1;  // Initial player level
-    [SerializeField] private int currentXP = 0;     // Current XP
-    [SerializeField] private int xpToNextLevel = 10; // XP needed to level up initially
-    [SerializeField] private TextMeshProUGUI levelText;  // UI Text to display current level
-    [SerializeField] private TextMeshProUGUI xpText;     // UI Text to display XP progress
-
-    // Health System
-    [Header("Health System")]
-    [SerializeField] private int maxHealth = 10;     // Maximum health
-    private int currentHealth;
-    [SerializeField] private TextMeshProUGUI healthText; // UI Text to display health
+    [SerializeField] private int currentLevel = 1;
+    [SerializeField] private int currentXP = 0;
+    [SerializeField] private int xpToNextLevel = 10;
+    [SerializeField] private TextMeshProUGUI levelText;
+    [SerializeField] private TextMeshProUGUI xpText;
 
     private void Awake() {
         controller = GetComponent<CharacterController>();
     }
 
     private void Start() {
-        // Start the auto-firing coroutine
-        StartCoroutine(AutoFire());
-
-        // Initialize health, XP, and level display
+        currentSpeed = baseSpeed; // Initialize speed based on base value
         currentHealth = maxHealth;
         UpdateXPDisplay();
         UpdateHealthDisplay();
+        UpdateShieldDisplay();
+
+        // Start the auto-firing coroutine
+        StartCoroutine(AutoFire());
     }
 
     void Update() {
@@ -58,24 +63,19 @@ public class PlayerController : MonoBehaviour {
         if (isPaused) return;
 
         // Get input for movement
-        float x = Input.GetAxis("Horizontal"); 
-        float z = Input.GetAxis("Vertical");   
+        float x = Input.GetAxis("Horizontal");
+        float z = Input.GetAxis("Vertical");
 
-        // Get camera-relative forward direction, ignoring the y-axis
         Vector3 forward = cam.forward;
         forward.y = 0f;
         forward.Normalize();
 
-        // Get camera-relative right direction, ignoring the y-axis
         Vector3 right = cam.right;
         right.y = 0f;
         right.Normalize();
 
-        // Combine the input with the camera directions
         Vector3 move = forward * z + right * x;
-
-        // Move the character controller
-        controller.Move(move * speed * Time.deltaTime);
+        controller.Move(move * currentSpeed * Time.deltaTime);
 
         // Rotate the player in the direction of movement
         if (move.magnitude > 0) {
@@ -83,76 +83,84 @@ public class PlayerController : MonoBehaviour {
             transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRotation, rotationSpeed * Time.deltaTime);
         }
 
-        // Apply gravity (if necessary for specific behaviors)
         velocity.y -= gravity * Time.deltaTime;
         controller.Move(velocity * Time.deltaTime);
     }
 
     public void TogglePause() {
-        isPaused = !isPaused;  // Toggle pause state
-        pauseMenu.SetActive(isPaused);  // Show or hide the pause menu
-        Time.timeScale = isPaused ? 0 : 1;  // Pause or resume the game time
+        isPaused = !isPaused;
+        pauseMenu.SetActive(isPaused);
+        Time.timeScale = isPaused ? 0 : 1;
     }
 
     private IEnumerator AutoFire() {
         while (true) {
-            if (!isPaused)  // Only shoot if the game is not paused
+            if (!isPaused)
                 ShootProjectile();
-            yield return new WaitForSeconds(fireRate); 
+            yield return new WaitForSeconds(fireRate);
         }
     }
 
     private void ShootProjectile() {
-        // Instantiate a new projectile at the spawn point and facing direction
-        Instantiate(projectilePrefab, projectileSpawnPoint.position, transform.rotation);
+        GameObject projectile = Instantiate(projectilePrefab, projectileSpawnPoint.position, transform.rotation);
+        // Set damage if projectile has a damage component
+        Projectile projectileScript = projectile.GetComponent<Projectile>();
+        if (projectileScript != null) {
+            projectileScript.SetDamage(attackDamage);
+        }
     }
 
-    // Method to add XP, which can be called by the XP item on pickup
     public void AddXP(int amount) {
         currentXP += amount;
-        Debug.Log("XP added! Current XP: " + currentXP);
-
-        // Check for level up
         if (currentXP >= xpToNextLevel) {
             LevelUp();
         }
-
-        // Update the XP and level display on the UI
         UpdateXPDisplay();
     }
 
-    // Method to handle leveling up
     private void LevelUp() {
-        currentLevel++;             // Increase player level
-        currentXP -= xpToNextLevel; // Reset current XP for next level
-        xpToNextLevel += 50;        // Increase the XP needed for the next level (optional scaling)
-
-        Debug.Log("Leveled up! New Level: " + currentLevel);
-        UpdateXPDisplay(); // Update UI to reflect the new level and XP progress
+        currentLevel++;
+        currentXP -= xpToNextLevel;
+        xpToNextLevel += 50; // Scaling XP for next level
+        UpdateXPDisplay();
     }
 
-    // Method to update the UI display for level and XP
     private void UpdateXPDisplay() {
         levelText.text = "Level: " + currentLevel;
         xpText.text = "XP: " + currentXP + " / " + xpToNextLevel;
     }
 
-    // Method to take damage when hit by an enemy
     public void TakeDamage(int damage) {
-        currentHealth -= damage;
-        Debug.Log("Hero took damage! Current Health: " + currentHealth);
-
-        if (currentHealth <= 0) {
-            Debug.Log("Hero is dead!");
-            // Add game over logic here, like reloading the scene or showing a game over screen
+        if (currentShield > 0) {
+            currentShield--; // Shield absorbs the damage first
+        } else {
+            currentHealth -= damage;
         }
 
         UpdateHealthDisplay();
+        UpdateShieldDisplay();
+
+        if (currentHealth <= 0) {
+            Debug.Log("Hero is dead!");
+            // Add game over logic here
+        }
     }
 
-    // Method to update the UI display for health
+    public void AddHealth(int amount) {
+        currentHealth = Mathf.Min(currentHealth + amount, maxHealth);
+        UpdateHealthDisplay();
+    }
+
+    public void AddShield(int amount) {
+        currentShield = Mathf.Min(currentShield + amount, maxShield);
+        UpdateShieldDisplay();
+    }
+
     private void UpdateHealthDisplay() {
         healthText.text = "Health: " + currentHealth;
     }
-}
 
+    private void UpdateShieldDisplay() {
+        shieldText.text = "Shield: " + currentShield;
+    }
+}
