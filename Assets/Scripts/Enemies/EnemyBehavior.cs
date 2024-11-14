@@ -12,7 +12,7 @@ public class EnemyBehavior : MonoBehaviour {
     public GameObject xpPrefab;
 
     // Add a flag to prevent multiple XP drops
-    private bool hasDied = false;
+    protected bool hasDied = false;
 
     // Flag to determine if the enemy should die on hero contact
     public bool shouldDieOnHeroContact = true;
