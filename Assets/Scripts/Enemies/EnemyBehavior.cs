@@ -65,13 +65,38 @@ public class EnemyBehavior : MonoBehaviour {
     }
 
     // Method to handle enemy death and ensure XP drops only once
-    protected virtual void Die() {
-        if (!hasDied) {
-            hasDied = true; // Set flag to true to prevent multiple triggers
-            if (xpPrefab != null && xpValue > 0) {
+    public GameObject[] pickupPrefabs; // Assign different pickup prefabs in the Inspector
+
+    protected virtual void Die()
+    {
+        if (!hasDied)
+        {
+            hasDied = true;
+            // Drop XP
+            if (xpPrefab != null && xpValue > 0)
+            {
                 Instantiate(xpPrefab, transform.position, Quaternion.identity);
             }
-            Destroy(gameObject); // Destroy the enemy
+        
+            // Randomly drop a pickup
+            DropPickup();
+
+            Destroy(gameObject);
+        }
+    }
+
+    private void DropPickup()
+    {
+        if (pickupPrefabs != null && pickupPrefabs.Length > 0)
+        {
+            int randomIndex = Random.Range(0, pickupPrefabs.Length);
+            GameObject pickup = pickupPrefabs[randomIndex];
+
+            // 10% chance to drop a pickup
+            if (Random.value < 0.1f)
+            {
+                Instantiate(pickup, transform.position, Quaternion.identity);
+            }
         }
     }
 }

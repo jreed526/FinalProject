@@ -30,6 +30,7 @@ public class PlayerController : MonoBehaviour
     private int currentShield = 0;
     [SerializeField] private TextMeshProUGUI healthText;
     [SerializeField] private TextMeshProUGUI shieldText; // UI for shield
+    private bool isInvincible = false; // Class-level variable for invincibility
 
     // Leveling System
     [Header("Leveling System")]
@@ -190,6 +191,9 @@ public class PlayerController : MonoBehaviour
 
     public void TakeDamage(int damage)
     {
+        // Check invincibility status before taking damage
+        if (isInvincible) return;
+
         if (currentShield > 0)
         {
             currentShield--; // Shield absorbs the damage first
@@ -238,5 +242,31 @@ public class PlayerController : MonoBehaviour
             perkCanvas.SetActive(false);
             Time.timeScale = 1; // Resume the game
         }
+    }
+
+    public IEnumerator TempIncreaseAttack(int amount, float duration)
+    {
+        AttackDamage += amount;
+        yield return new WaitForSeconds(duration);
+        AttackDamage -= amount; // Revert after duration
+    }
+
+    public IEnumerator TempIncreaseSpeed(float speedMultiplier, float duration)
+    {
+        CurrentSpeed = baseSpeed * (1 + speedMultiplier);
+        yield return new WaitForSeconds(duration);
+        CurrentSpeed = baseSpeed; // Revert to normal speed
+    }
+
+    public IEnumerator ActivateInvincibility(float duration)
+    {
+        int originalAttack = AttackDamage;
+        CurrentSpeed = baseSpeed * 1.1f; // +10% speed
+        AttackDamage += 1;
+        isInvincible = true; // Use class-level variable
+        yield return new WaitForSeconds(duration);
+        isInvincible = false;
+        AttackDamage = originalAttack;
+        CurrentSpeed = baseSpeed;
     }
 }
