@@ -6,7 +6,6 @@
 /[Tt]emp/
 /[Oo]bj/
 /[Bb]uild/
-/[Bb]uilds/
 /[Ll]ogs/
 /[Uu]ser[Ss]ettings/
 
@@ -55,7 +54,7 @@ ExportedObj/
 # Unity3D generated file on crash reports
 sysinfo.txt
 
-# Builds
+# Builds (excluding WebGL build files)
 *.apk
 *.aab
 *.unitypackage
@@ -70,3 +69,16 @@ crashlytics-build.properties
 # Temporary auto-generated Android Assets
 /[Aa]ssets/[Ss]treamingAssets/aa.meta
 /[Aa]ssets/[Ss]treamingAssets/aa/*
+
+# --- WebGL Build Exclusions ---
+# Ignore everything in the Build folder except WebGL files
+/[Bb]uild/*
+!/Build/*.wasm
+!/Build/*.framework.js
+!/Build/*.data
+!/Build/*.loader.js
+!/Build/UnityLoader.js
+
+# Include index.html for WebGL
+!index.html
+
