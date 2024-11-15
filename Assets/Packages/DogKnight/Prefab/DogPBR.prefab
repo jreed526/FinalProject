@@ -1280,7 +1280,7 @@ Transform:
   m_GameObject: {fileID: 8422892626600285392}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 2, y: 2, z: 2}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 8422892626600249712}
@@ -1335,11 +1335,17 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   speed: 1
-  health: 8
-  xpValue: 1
+  health: 14
+  xpValue: 2
   xpPrefab: {fileID: 951251824637375397, guid: a93b284372b71409285c52b9560e5e10, type: 3}
   shouldDieOnHeroContact: 1
-  auraRadius: 1.5
+  pickupPrefabs:
+  - {fileID: 3679523602156879369, guid: 1c612c56351c54e508718c69477e2ee0, type: 3}
+  - {fileID: 900652324459704257, guid: 2e12b52e9fb924eab92302cfcd5e2c4a, type: 3}
+  - {fileID: 8867973971252115184, guid: 54dadc73b9b1e469e8ce36300f94f88e, type: 3}
+  - {fileID: 2884021093935625692, guid: a634d6a1d8ff0420baeedc07bf71cf23, type: 3}
+  - {fileID: 6360783866128014555, guid: f775421fc106c4ba6958972643de8dd6, type: 3}
+  auraRadius: 1
   xpItem5Prefab: {fileID: 77423973965676214, guid: fa7c68ec67b794ff6be1eb2b3abfbee4, type: 3}
   xpDropChance: 1
 --- !u!1 &8422892626600285394

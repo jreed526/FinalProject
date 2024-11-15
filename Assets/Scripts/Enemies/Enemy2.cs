@@ -7,6 +7,8 @@ public class Enemy2 : EnemyBehavior {
     public float projectileSpeed = 3f; // Speed of the projectile
     public float attackInterval = 2f; // Time between attacks
 
+    public float standardSpeed = 1.0f; // Add this line
+
     private float nextAttackTime;
 
     protected override void Start() {
@@ -15,7 +17,7 @@ public class Enemy2 : EnemyBehavior {
         
         // Set specific attributes for Blue Turtle Shell
         health = 5;
-        speed = 1.0f; // Slower movement speed than the base enemy
+        speed = standardSpeed; // Use the new standardSpeed variable here
         xpValue = 3; // XP dropped on death
         
         nextAttackTime = Time.time + attackInterval;

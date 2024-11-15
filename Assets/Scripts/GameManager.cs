@@ -1,8 +1,10 @@
 using System.Collections;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using TMPro;
 
-public class GameManager : MonoBehaviour {
+public class GameManager : MonoBehaviour
+{
     public TMP_Text roundText;         // TMP Text to display round info
     public TMP_Text timerText;         // TMP Text to display the round/grace period timer
     public int roundDuration = 120;    // Duration of each round in seconds
@@ -12,10 +14,15 @@ public class GameManager : MonoBehaviour {
     public GameObject enemyType1Prefab;
     public GameObject enemyType2Prefab;
     public GameObject enemyType3Prefab;
+    public GameObject enemyType4Prefab;
     public GameObject bossPrefab;
 
-    public float spawnRadius = 15f;   // Spawn area radius around the hero
+    public float spawnRadius = 15f;    // Spawn area radius around the hero
     public float enemySpawnInterval = 2f; // Initial spawn interval for enemies
+
+    // Boss settings
+    private bool isBossAlive = false;
+    private float bossRespawnDelay = 15f;
 
     // Private variables
     private int currentRound = 1;
@@ -23,100 +30,145 @@ public class GameManager : MonoBehaviour {
     private float gracePeriodTimer;
     private bool isGracePeriod = false;
     private bool isSpawningEnemies = true;
+    private bool gameEnded = false;
 
-    private Transform hero;  // Reference to hero's position (can be set in the Inspector)
-    private GameObject[] activeEnemies;  // Store active enemies for respawn after grace period
+    private Transform heroTransform;
+    private PlayerController heroScript;
+    private GameObject[] activeEnemies;
 
-    private void Start() {
-        hero = GameObject.FindGameObjectWithTag("Hero").transform; // Find the hero by its tag
+    private void Start()
+    {
+        if (SceneManager.GetActiveScene().name != "_Start_Screen")
+        {
+            GameObject heroObject = GameObject.FindGameObjectWithTag("Hero");
+            if (heroObject != null)
+            {
+                heroTransform = heroObject.transform;
+                heroScript = heroObject.GetComponent<PlayerController>();
+            }
 
-        roundTimer = roundDuration;
-        gracePeriodTimer = gracePeriodDuration;
+            roundTimer = roundDuration;
+            gracePeriodTimer = gracePeriodDuration;
 
-        // Update the UI initially
-        UpdateRoundUI();
-        UpdateTimerUI(roundTimer);
-        
-        // Start the round cycle and enemy spawning
-        StartCoroutine(RoundCycle());
-        StartCoroutine(EnemySpawning());
+            UpdateRoundUI();
+            UpdateTimerUI(roundTimer);
+
+            StartCoroutine(RoundCycle());
+            StartCoroutine(EnemySpawning());
+        }
     }
 
-    private IEnumerator RoundCycle() {
-        while (true) {
-            if (!isGracePeriod) {
-                // Round Timer countdown
+    private void Update()
+    {
+        if (!gameEnded && heroScript != null && currentRound <= 5)
+        {
+            CheckGameOverConditions();
+        }
+    }
+
+    private IEnumerator RoundCycle()
+    {
+        while (currentRound <= 5)
+        {
+            if (!isGracePeriod)
+            {
                 roundTimer -= Time.deltaTime;
                 UpdateTimerUI(roundTimer);
 
-                if (roundTimer <= 0) {
-                    // End of round, start grace period
+                if (roundTimer <= 0)
+                {
                     isGracePeriod = true;
                     roundTimer = 0;
                     UpdateTimerUI(roundTimer);
                     StartGracePeriod();
                 }
-            } else {
-                // Grace Period countdown
+            }
+            else
+            {
                 gracePeriodTimer -= Time.deltaTime;
                 UpdateTimerUI(gracePeriodTimer);
 
-                if (gracePeriodTimer <= 0) {
-                    // Grace period ends, start new round
+                if (gracePeriodTimer <= 0)
+                {
                     isGracePeriod = false;
                     gracePeriodTimer = gracePeriodDuration;
                     currentRound++;
                     roundTimer = roundDuration;
                     UpdateRoundUI();
                     UpdateTimerUI(roundTimer);
-                    RespawnEnemies(); // Respawn the enemies after grace period
-                    yield return new WaitForSeconds(1);  // Pause before the next round starts
+
+                    if (currentRound == 2)
+                    {
+                        IncreaseEnemy1Speed();
+                    }
+                    else if (currentRound == 3)
+                    {
+                        IncreaseEnemy2Speed();
+                    }
+
+                    RespawnEnemies();
+                    yield return new WaitForSeconds(1);
+
+                    if (currentRound == 5)
+                    {
+                        StartCoroutine(SpawnBoss());
+                    }
                 }
             }
 
             yield return null;
         }
-    }
 
-    private void StartGracePeriod() {
-        // Disable enemy spawning during grace period
-        isSpawningEnemies = false;
-        roundText.text = "Grace Period";  // Update round text to indicate grace period
-
-        // Destroy all enemies at the end of the round (but don't drop XP)
-        DestroyAllEnemies();
-    }
-
-    private void RespawnEnemies() {
-        // Respawn enemies after the grace period
-        StartCoroutine(EnemySpawning()); // Restart enemy spawning after grace period ends
-    }
-
-    private void DestroyAllEnemies() {
-        // Find all active enemies and destroy them
-        activeEnemies = GameObject.FindGameObjectsWithTag("Enemy"); // Store all currently active enemies
-        foreach (var enemy in activeEnemies) {
-            Destroy(enemy); // Destroy all active enemies on screen
+        if (currentRound > 5 && !gameEnded)
+        {
+            EndGame();
         }
     }
 
-    private void UpdateRoundUI() {
-        roundText.text = "Round: " + currentRound;  // Update round UI with current round number
+    private void StartGracePeriod()
+    {
+        isSpawningEnemies = false;
+        roundText.text = "Grace Period";
+        DestroyAllEnemies();
     }
 
-    private void UpdateTimerUI(float timeRemaining) {
-        if (isGracePeriod) {
-            // Display grace period timer
+    private void RespawnEnemies()
+    {
+        isSpawningEnemies = true;
+    }
+
+    private void DestroyAllEnemies()
+    {
+        activeEnemies = GameObject.FindGameObjectsWithTag("Enemy");
+        foreach (var enemy in activeEnemies)
+        {
+            Destroy(enemy);
+        }
+    }
+
+    private void UpdateRoundUI()
+    {
+        roundText.text = "Round: " + currentRound;
+    }
+
+    private void UpdateTimerUI(float timeRemaining)
+    {
+        if (isGracePeriod)
+        {
             timerText.text = "Grace: " + Mathf.Ceil(gracePeriodTimer).ToString();
-        } else {
-            // Display round timer
+        }
+        else
+        {
             timerText.text = "Time: " + Mathf.Ceil(timeRemaining).ToString();
         }
     }
 
-    private IEnumerator EnemySpawning() {
-        while (true) {
-            if (!isGracePeriod && isSpawningEnemies) {
+    private IEnumerator EnemySpawning()
+    {
+        while (true)
+        {
+            if (!isGracePeriod && isSpawningEnemies)
+            {
                 SpawnEnemies();
             }
 
@@ -124,46 +176,120 @@ public class GameManager : MonoBehaviour {
         }
     }
 
-    private void SpawnEnemies() {
-        // Spawn enemies based on the current round
+    private void SpawnEnemies()
+    {
         GameObject enemyToSpawn = null;
 
-        if (currentRound == 1) {
-            // Round 1: Simple enemies, spawn one of enemy type 1
+        if (currentRound == 1)
+        {
             enemyToSpawn = enemyType1Prefab;
-        } else if (currentRound == 2) {
-            // Round 2: Slightly faster enemyType1, introduce enemyType2
+        }
+        else if (currentRound == 2)
+        {
             enemyToSpawn = Random.Range(0, 2) == 0 ? enemyType1Prefab : enemyType2Prefab;
-            enemySpawnInterval = 1.8f;  // Slightly faster spawn interval
-        } else if (currentRound == 3) {
-            // Round 3: EnemyType2 speed is increased
-            enemyToSpawn = enemyType2Prefab;
-            enemySpawnInterval = 1.5f;  // Standard spawn rate
-        } else if (currentRound == 4) {
-            // Round 4: Introduce enemyType3
-            enemyToSpawn = Random.Range(0, 2) == 0 ? enemyType1Prefab : enemyType3Prefab;
-        } else if (currentRound == 5) {
-            // Round 5: Introduce boss and adjust spawn rates
-            if (Random.Range(0, 10) < 1) { // 10% chance to spawn boss
-                enemyToSpawn = bossPrefab;
-            } else {
-                enemyToSpawn = Random.Range(0, 2) == 0 ? enemyType2Prefab : enemyType3Prefab;
+            enemySpawnInterval = 1.8f;
+        }
+        else if (currentRound == 3)
+        {
+            enemyToSpawn = Random.Range(0, 3) == 0 ? enemyType3Prefab : enemyType2Prefab;
+            enemySpawnInterval = (enemyToSpawn == enemyType3Prefab) ? 2.5f : 1.5f;
+        }
+        else if (currentRound == 4)
+        {
+            int enemyType = Random.Range(0, 10);
+            if (enemyType < 4)
+                enemyToSpawn = enemyType1Prefab;
+            else if (enemyType < 8)
+                enemyToSpawn = enemyType3Prefab;
+            else
+                enemyToSpawn = enemyType4Prefab;
+            enemySpawnInterval = (enemyToSpawn == enemyType4Prefab) ? 3.0f : 2.0f;
+        }
+        else if (currentRound == 5)
+        {
+            if (!isBossAlive)
+            {
+                return;
             }
-            enemySpawnInterval = 2f;  // Slower spawn for normal enemies
+            
+            int enemyType = Random.Range(0, 6);
+            if (enemyType < 2)
+                enemyToSpawn = enemyType2Prefab;
+            else
+                enemyToSpawn = enemyType3Prefab;
+            enemySpawnInterval = (enemyToSpawn == enemyType3Prefab) ? 3.0f : 2.0f;
         }
 
-        // Spawn the selected enemy
-        if (enemyToSpawn != null) {
+        if (enemyToSpawn != null && heroTransform != null)
+        {
             Vector2 randomPoint = Random.insideUnitCircle.normalized * spawnRadius;
-            Vector3 spawnPosition = new Vector3(hero.position.x + randomPoint.x, hero.position.y, hero.position.z + randomPoint.y);
+            Vector3 spawnPosition = new Vector3(heroTransform.position.x + randomPoint.x, heroTransform.position.y, heroTransform.position.z + randomPoint.y);
             Instantiate(enemyToSpawn, spawnPosition, Quaternion.identity);
         }
+    }
 
-        // End round logic (despawn enemies and don't drop XP)
-        if (roundTimer <= 0) {
-            // Destroy all enemies without dropping XP
-            foreach (var enemy in GameObject.FindGameObjectsWithTag("Enemy")) {
-                Destroy(enemy); // Or handle despawning logic here
+    private IEnumerator SpawnBoss()
+    {
+        isBossAlive = true;
+        SpawnBossEnemy();
+        while (currentRound == 5)
+        {
+            if (!isBossAlive)
+            {
+                yield return new WaitForSeconds(bossRespawnDelay);
+                SpawnBossEnemy();
+            }
+            yield return null;
+        }
+    }
+
+    private void SpawnBossEnemy()
+    {
+        Vector3 spawnPosition = heroTransform.position + new Vector3(Random.Range(-spawnRadius, spawnRadius), 0, Random.Range(-spawnRadius, spawnRadius));
+        Instantiate(bossPrefab, spawnPosition, Quaternion.identity);
+        isBossAlive = true;
+    }
+
+    public void OnBossDefeated()
+    {
+        isBossAlive = false;
+    }
+
+    private void CheckGameOverConditions()
+    {
+        if (heroScript != null && heroScript.CurrentHealth <= 0)
+        {
+            EndGame();
+        }
+    }
+
+    private void EndGame()
+    {
+        gameEnded = true;
+        SceneManager.LoadScene("_Game_Over");
+    }
+
+    private void IncreaseEnemy1Speed()
+    {
+        foreach (var enemy in GameObject.FindGameObjectsWithTag("Enemy"))
+        {
+            Enemy1 enemy1Component = enemy.GetComponent<Enemy1>();
+            if (enemy1Component != null)
+            {
+                enemy1Component.slimeSpeed *= 1.25f;
+                enemy1Component.speed = enemy1Component.slimeSpeed;
+            }
+        }
+    }
+
+    private void IncreaseEnemy2Speed()
+    {
+        foreach (var enemy in GameObject.FindGameObjectsWithTag("Enemy"))
+        {
+            Enemy2 enemy2Component = enemy.GetComponent<Enemy2>();
+            if (enemy2Component != null)
+            {
+                enemy2Component.speed = enemy2Component.standardSpeed;
             }
         }
     }

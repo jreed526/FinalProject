@@ -606,11 +606,18 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   speed: 2
   health: 1
-  xpValue: 1
+  xpValue: 2
   xpPrefab: {fileID: 951251824637375397, guid: a93b284372b71409285c52b9560e5e10, type: 3}
+  shouldDieOnHeroContact: 1
+  pickupPrefabs:
+  - {fileID: 8867973971252115184, guid: 54dadc73b9b1e469e8ce36300f94f88e, type: 3}
+  - {fileID: 2884021093935625692, guid: a634d6a1d8ff0420baeedc07bf71cf23, type: 3}
+  - {fileID: 900652324459704257, guid: 2e12b52e9fb924eab92302cfcd5e2c4a, type: 3}
+  - {fileID: 6360783866128014555, guid: f775421fc106c4ba6958972643de8dd6, type: 3}
   projectilePrefab: {fileID: 7581615568043429592, guid: a3f9c4be0649a48509e2bd522718abed, type: 3}
   projectileSpeed: 3
   attackInterval: 2
+  standardSpeed: 1
 --- !u!1 &1532652994627396
 GameObject:
   m_ObjectHideFlags: 0

@@ -172,7 +172,10 @@ public class PlayerController : MonoBehaviour
     {
         currentLevel++;
         currentXP -= xpToNextLevel;
-        xpToNextLevel += 50; // Scaling XP for next level
+    
+        // Increase the XP needed for the next level by 15 more than the last increase
+        xpToNextLevel += (currentLevel * 15) - 5;
+
         UpdateXPDisplay();
 
         // Show the Perk Menu

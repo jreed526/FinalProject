@@ -85,15 +85,15 @@ public class EnemyBehavior : MonoBehaviour {
         }
     }
 
-    private void DropPickup()
+    protected void DropPickup()
     {
         if (pickupPrefabs != null && pickupPrefabs.Length > 0)
         {
             int randomIndex = Random.Range(0, pickupPrefabs.Length);
             GameObject pickup = pickupPrefabs[randomIndex];
 
-            // 10% chance to drop a pickup
-            if (Random.value < 0.1f)
+            // 25% chance to drop a pickup
+            if (Random.value < 0.25f)
             {
                 Instantiate(pickup, transform.position, Quaternion.identity);
             }
