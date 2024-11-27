@@ -174,15 +174,26 @@ public class PlayerController : MonoBehaviour
         Time.timeScale = isPaused ? 0 : 1;
     }
 
+    private bool canShoot = true; // New flag to control shooting
+
     private IEnumerator AutoFire()
     {
         while (true)
         {
-            if (!isPaused)
+            if (canShoot && !isPaused)
+            {
                 ShootProjectile();
+            }
             yield return new WaitForSeconds(fireRate);
         }
     }
+
+    public void SetShootingEnabled(bool isEnabled)
+    {
+        canShoot = isEnabled; // Enable or disable shooting
+    }
+
+
 
     private void ShootProjectile()
     {

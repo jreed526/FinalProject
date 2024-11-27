@@ -97,6 +97,12 @@ public class GameManager : MonoBehaviour
                     UpdateRoundUI();
                     UpdateTimerUI(roundTimer);
 
+                    // Re-enable hero shooting
+                    if (heroScript != null)
+                    {
+                        heroScript.SetShootingEnabled(true);
+                    }
+
                     if (currentRound == 2)
                     {
                         IncreaseEnemy1Speed();
@@ -130,6 +136,12 @@ public class GameManager : MonoBehaviour
         isSpawningEnemies = false;
         roundText.text = "Grace Period";
         DestroyAllEnemies();
+
+        // Disable hero shooting
+        if (heroScript != null)
+        {
+            heroScript.SetShootingEnabled(false);
+        }
     }
 
     private void RespawnEnemies()
@@ -139,12 +151,21 @@ public class GameManager : MonoBehaviour
 
     private void DestroyAllEnemies()
     {
+        // Destroy all enemies
         activeEnemies = GameObject.FindGameObjectsWithTag("Enemy");
         foreach (var enemy in activeEnemies)
         {
             Destroy(enemy);
         }
+
+        // Destroy all enemy projectiles
+        GameObject[] enemyProjectiles = GameObject.FindGameObjectsWithTag("EnemyProjectile");
+        foreach (var projectile in enemyProjectiles)
+        {
+            Destroy(projectile);
+        }
     }
+
 
     private void UpdateRoundUI()
     {
