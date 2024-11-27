@@ -157,6 +157,7 @@ GameObject:
   - component: {fileID: 2219292830544548193}
   - component: {fileID: -2614616656282145321}
   - component: {fileID: 697922460848295800}
+  - component: {fileID: 53530960059361453}
   m_Layer: 0
   m_Name: ChestMonsterPBRDefault
   m_TagString: Enemy
@@ -242,6 +243,18 @@ SphereCollider:
   serializedVersion: 2
   m_Radius: 0.5
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &53530960059361453
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2219292830553907877}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f243f61c7c77344c6bc223bc3e582bf1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &2219292830553907879
 GameObject:
   m_ObjectHideFlags: 0

@@ -1264,6 +1264,7 @@ GameObject:
   - component: {fileID: 8422892626592999198}
   - component: {fileID: 48760726065460875}
   - component: {fileID: 7415218041382146530}
+  - component: {fileID: 6317964751561135802}
   m_Layer: 0
   m_Name: DogPBR
   m_TagString: Enemy
@@ -1348,6 +1349,18 @@ MonoBehaviour:
   auraRadius: 1
   xpItem5Prefab: {fileID: 77423973965676214, guid: fa7c68ec67b794ff6be1eb2b3abfbee4, type: 3}
   xpDropChance: 1
+--- !u!114 &6317964751561135802
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8422892626600285392}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f243f61c7c77344c6bc223bc3e582bf1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &8422892626600285394
 GameObject:
   m_ObjectHideFlags: 0

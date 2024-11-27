@@ -4,8 +4,11 @@ using UnityEngine;
 using TMPro;
 
 [RequireComponent(typeof(CharacterController))]
+[RequireComponent(typeof(AudioSource))] // Ensures an AudioSource is attached
 public class PlayerController : MonoBehaviour
 {
+    private BlinkColorOnHit blinkColorOnHit;
+
     [Header("General")]
     private CharacterController controller;
     [SerializeField] private float baseSpeed = 5f;
@@ -21,6 +24,12 @@ public class PlayerController : MonoBehaviour
     private Vector3 velocity;
     private bool isPaused = false;
 
+    [Header("Audio")]
+    [SerializeField] private AudioClip shootSFX; // Shooting sound effect
+    [SerializeField] private AudioClip walkSFX;  // Walking sound effect
+    private AudioSource audioSource;            // AudioSource component
+    private bool isWalking = false;             // Tracks if the player is walking
+
     // Hero Traits
     [Header("Hero Traits")]
     [SerializeField] private int attackDamage = 1; // Damage per projectile
@@ -30,7 +39,7 @@ public class PlayerController : MonoBehaviour
     private int currentShield = 0;
     [SerializeField] private TextMeshProUGUI healthText;
     [SerializeField] private TextMeshProUGUI shieldText; // UI for shield
-    private bool isInvincible = false; // Class-level variable for invincibility
+    private bool isInvincible = false;
 
     // Leveling System
     [Header("Leveling System")]
@@ -78,6 +87,8 @@ public class PlayerController : MonoBehaviour
     private void Awake()
     {
         controller = GetComponent<CharacterController>();
+        audioSource = GetComponent<AudioSource>(); // Initialize AudioSource component
+        blinkColorOnHit = GetComponent<BlinkColorOnHit>();
     }
 
     private void Start()
@@ -118,16 +129,42 @@ public class PlayerController : MonoBehaviour
         Vector3 move = forward * z + right * x;
         controller.Move(move * currentSpeed * Time.deltaTime);
 
-        // Rotate the player in the direction of movement
-        if (move.magnitude > 0)
+        // Check if the player is moving and start/stop walking sound as needed
+        if (move.magnitude > 0 && !isWalking) // Start walking sound
         {
-            Quaternion targetRotation = Quaternion.LookRotation(move, Vector3.up);
-            transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRotation, rotationSpeed * Time.deltaTime);
+            isWalking = true;
+            StartCoroutine(PlayWalkingSound());
+        }
+        else if (move.magnitude == 0 && isWalking) // Stop walking sound
+        {
+            isWalking = false;
         }
 
         // Apply gravity
         velocity.y -= gravity * Time.deltaTime;
         controller.Move(velocity * Time.deltaTime);
+
+        // Rotate the player to face the mouse
+        RotateToMouse();
+    }
+
+    private void RotateToMouse()
+    {
+        // Get the mouse position in screen space
+        Vector3 mousePosition = Input.mousePosition;
+
+        // Convert the mouse position to world space
+        Ray ray = Camera.main.ScreenPointToRay(mousePosition);
+        if (Physics.Raycast(ray, out RaycastHit hit, Mathf.Infinity))
+        {
+            Vector3 lookDirection = hit.point - transform.position;
+            lookDirection.y = 0; // Ensure the player doesn't tilt up or down
+            if (lookDirection.sqrMagnitude > 0.01f)
+            {
+                Quaternion targetRotation = Quaternion.LookRotation(lookDirection);
+                transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRotation, rotationSpeed * Time.deltaTime);
+            }
+        }
     }
 
     public void TogglePause()
@@ -150,11 +187,34 @@ public class PlayerController : MonoBehaviour
     private void ShootProjectile()
     {
         GameObject projectile = Instantiate(projectilePrefab, projectileSpawnPoint.position, transform.rotation);
+
         // Set damage if projectile has a damage component
         Projectile projectileScript = projectile.GetComponent<Projectile>();
         if (projectileScript != null)
         {
             projectileScript.SetDamage(attackDamage);
+        }
+
+        // Play shooting sound effect
+        if (shootSFX != null && audioSource != null)
+        {
+            audioSource.PlayOneShot(shootSFX);
+        }
+    }
+
+    private IEnumerator PlayWalkingSound()
+    {
+        while (isWalking) // Play walking sound as long as the player is walking
+        {
+            if (walkSFX != null && audioSource != null)
+            {
+                audioSource.PlayOneShot(walkSFX);
+            }
+            else
+            {
+                Debug.LogWarning("AudioSource or walkSFX is missing!");
+            }
+            yield return new WaitForSeconds(0.3f); // Interval between footsteps
         }
     }
 
@@ -172,7 +232,7 @@ public class PlayerController : MonoBehaviour
     {
         currentLevel++;
         currentXP -= xpToNextLevel;
-    
+
         // Increase the XP needed for the next level by 15 more than the last increase
         xpToNextLevel += (currentLevel * 15) - 5;
 
@@ -194,16 +254,26 @@ public class PlayerController : MonoBehaviour
 
     public void TakeDamage(int damage)
     {
-        // Check invincibility status before taking damage
         if (isInvincible) return;
 
+        // Check if the player has a shield and absorb damage
         if (currentShield > 0)
         {
             currentShield--; // Shield absorbs the damage first
+            // Trigger the blue blink when shielded
+            if (blinkColorOnHit != null)
+            {
+                blinkColorOnHit.Blink(true); // Blink blue if shield is present
+            }
         }
         else
         {
             currentHealth -= damage;
+            // Trigger the red blink when there's no shield
+            if (blinkColorOnHit != null)
+            {
+                blinkColorOnHit.Blink(false); // Blink red if no shield
+            }
         }
 
         UpdateHealthDisplay();
@@ -212,9 +282,9 @@ public class PlayerController : MonoBehaviour
         if (currentHealth <= 0)
         {
             Debug.Log("Hero is dead!");
-            // Add game over logic here
         }
     }
+
 
     public void AddHealth(int amount)
     {
@@ -263,13 +333,8 @@ public class PlayerController : MonoBehaviour
 
     public IEnumerator ActivateInvincibility(float duration)
     {
-        int originalAttack = AttackDamage;
-        CurrentSpeed = baseSpeed * 1.1f; // +10% speed
-        AttackDamage += 1;
-        isInvincible = true; // Use class-level variable
+        isInvincible = true;
         yield return new WaitForSeconds(duration);
         isInvincible = false;
-        AttackDamage = originalAttack;
-        CurrentSpeed = baseSpeed;
     }
 }

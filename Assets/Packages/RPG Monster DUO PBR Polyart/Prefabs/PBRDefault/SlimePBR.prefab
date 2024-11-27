@@ -427,6 +427,7 @@ GameObject:
   - component: {fileID: -7528885292747995389}
   - component: {fileID: -7921405531124206586}
   - component: {fileID: -4751111776704261533}
+  - component: {fileID: 4335253730847715288}
   m_Layer: 0
   m_Name: SlimePBR
   m_TagString: Enemy
@@ -526,3 +527,15 @@ MonoBehaviour:
   slimeHealth: 1
   slimeSpeed: 2
   slimeXPValue: 1
+--- !u!114 &4335253730847715288
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1931298151966786}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f243f61c7c77344c6bc223bc3e582bf1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 

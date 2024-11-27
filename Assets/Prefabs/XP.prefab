@@ -111,3 +111,5 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   xpAmount: 1
+  attractionRadius: 3
+  attractionSpeed: 7
