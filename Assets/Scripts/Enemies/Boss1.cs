@@ -48,6 +48,7 @@ public class Boss1 : EnemyBehavior {
             // Drop only the custom 5 XP item
             if (xpItem5Prefab != null && Random.value <= xpDropChance) {
                 Instantiate(xpItem5Prefab, transform.position, Quaternion.identity);
+                Instantiate(xpItem5Prefab, transform.position, Quaternion.identity);
             }
 
             // Destroy the Boss1 object

@@ -117,7 +117,7 @@ public class GameManager : MonoBehaviour
 
                     if (currentRound == 5)
                     {
-                        StartCoroutine(SpawnBoss());
+                    StartCoroutine(SpawnBoss());
                     }
                 }
             }
@@ -125,9 +125,10 @@ public class GameManager : MonoBehaviour
             yield return null;
         }
 
+        // Directly end the game after round 5, skipping grace period and round 6
         if (currentRound > 5 && !gameEnded)
         {
-            EndGame();
+            EndGame(); // Immediately transition to game over after round 5
         }
     }
 

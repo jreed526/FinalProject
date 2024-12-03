@@ -216,7 +216,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   speed: 2
-  health: 1
+  health: 16
   xpValue: 1
   xpPrefab: {fileID: 77423973965676214, guid: fa7c68ec67b794ff6be1eb2b3abfbee4, type: 3}
   shouldDieOnHeroContact: 1

@@ -3,6 +3,9 @@ using UnityEngine;
 
 public class Pickup : MonoBehaviour
 {
+    public float attractionRadius = 5f; // Radius within which the pickup is attracted to the hero
+    public float attractionSpeed = 3f; // Speed at which the pickup moves towards the hero
+
     public enum PickupType
     {
         Attack,
@@ -17,6 +20,7 @@ public class Pickup : MonoBehaviour
     public float duration = 10f; // Duration for temporary pickups (e.g., Attack, Movement, Invincible)
     public float despawnTime = 15f; // Time before the pickup despawns
     private Renderer pickupRenderer;
+    private Transform heroTransform; // Reference to the hero's transform
 
     private void Start()
     {
@@ -42,14 +46,34 @@ public class Pickup : MonoBehaviour
                 break;
         }
 
+        // Find the hero in the scene
+        GameObject hero = GameObject.FindGameObjectWithTag("Hero");
+        if (hero != null)
+        {
+            heroTransform = hero.transform;
+        }
+        else
+        {
+            Debug.LogError("Hero not found in the scene!");
+        }
+
         // Start the despawn timer
         StartCoroutine(DespawnAfterTime());
     }
 
-    private IEnumerator DespawnAfterTime()
+    private void Update()
     {
-        yield return new WaitForSeconds(despawnTime);
-        Destroy(gameObject);
+        if (heroTransform == null) return;
+
+        // Calculate the distance between the pickup and the hero
+        float distanceToHero = Vector3.Distance(transform.position, heroTransform.position);
+
+        // If within the attraction radius, move towards the hero
+        if (distanceToHero <= attractionRadius)
+        {
+            Vector3 direction = (heroTransform.position - transform.position).normalized;
+            transform.position += direction * attractionSpeed * Time.deltaTime;
+        }
     }
 
     private void OnTriggerEnter(Collider other)
@@ -85,5 +109,11 @@ public class Pickup : MonoBehaviour
                 player.AddHealth(2);
                 break;
         }
+    }
+
+    private IEnumerator DespawnAfterTime()
+    {
+        yield return new WaitForSeconds(despawnTime);
+        Destroy(gameObject);
     }
 }
