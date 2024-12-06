@@ -1350,6 +1350,11 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 3
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1314462182 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 4981727385859703835, guid: 225ba8641bcde473eb38da61f81cce5f, type: 3}
+  m_PrefabInstance: {fileID: 4981727386617464011}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1475569435 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 4981727385706046416, guid: 225ba8641bcde473eb38da61f81cce5f, type: 3}
@@ -1402,6 +1407,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   mainMenuCanvas: {fileID: 1646838777}
   helpMenuCanvas: {fileID: 1475569435}
+  pauseMenuPanel: {fileID: 0}
+  helpMenuMainPanel: {fileID: 1314462182}
 --- !u!114 &1646838779
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1699,7 +1706,11 @@ PrefabInstance:
     - target: {fileID: 4981727385047836961, guid: 225ba8641bcde473eb38da61f81cce5f, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
-      objectReference: {fileID: 1646838783}
+      objectReference: {fileID: 1475569441}
+    - target: {fileID: 4981727385047836961, guid: 225ba8641bcde473eb38da61f81cce5f, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
+      value: PlayClickSound
+      objectReference: {fileID: 0}
     - target: {fileID: 4981727385706046416, guid: 225ba8641bcde473eb38da61f81cce5f, type: 3}
       propertyPath: m_Name
       value: HelpMenuCanvas
